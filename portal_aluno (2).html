@@ -1,0 +1,1825 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal do Aluno — Padel</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ============================================================
+   VARIÁVEIS E RESET
+============================================================ */
+:root {
+  --bg: #F7F6F2;
+  --surface: #FFFFFF;
+  --surface2: #F0EFE9;
+  --border: #E2E0D8;
+  --text: #111110;
+  --text2: #6B6A65;
+  --text3: #A09F9A;
+  --accent: #1A3EFF;
+  --accent-light: #EEF1FF;
+  --accent-dark: #0F28B3;
+  --green: #1A8A4A;
+  --green-light: #EDFAF3;
+  --red: #C53030;
+  --red-light: #FEF2F2;
+  --amber: #B45309;
+  --amber-light: #FFFBEB;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.05);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* ============================================================
+   CONFIG — ALTERE AQUI
+============================================================ */
+/* As credenciais do Supabase são inseridas via JS abaixo */
+
+/* ============================================================
+   TELAS
+============================================================ */
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: flex; }
+
+/* ============================================================
+   TELA: LOGIN
+============================================================ */
+#screen-login {
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+
+#screen-login::before {
+  content: '';
+  position: absolute;
+  top: -120px; right: -120px;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(26,62,255,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.login-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 48px 40px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  z-index: 1;
+  animation: fadeUp 0.4s ease;
+}
+
+.login-logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 32px;
+}
+.login-logo span { color: var(--accent); }
+
+.login-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+.login-sub {
+  color: var(--text2);
+  font-size: 14px;
+  margin-bottom: 32px;
+}
+
+.login-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--surface2);
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 28px;
+}
+.login-tab {
+  flex: 1;
+  padding: 8px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  background: none;
+}
+.login-tab.active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* ============================================================
+   FORM ELEMENTS
+============================================================ */
+.field { margin-bottom: 16px; }
+.field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 6px;
+}
+.field input, .field select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+  appearance: none;
+}
+.field input:focus, .field select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(26,62,255,0.08);
+}
+.field input::placeholder { color: var(--text3); }
+
+/* ============================================================
+   BOTÕES
+============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 20px;
+  border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.18s;
+  text-decoration: none;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  width: 100%;
+}
+.btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.btn-outline {
+  background: transparent;
+  color: var(--text);
+  border: 1.5px solid var(--border);
+}
+.btn-outline:hover { border-color: var(--text2); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text2);
+  padding: 8px 12px;
+  font-size: 13px;
+}
+.btn-ghost:hover { color: var(--text); background: var(--surface2); border-radius: var(--radius-sm); }
+
+.btn-danger {
+  background: var(--red-light);
+  color: var(--red);
+  border: 1px solid rgba(197,48,48,0.2);
+}
+.btn-danger:hover { background: #fee2e2; }
+
+.btn-sm { padding: 8px 14px; font-size: 13px; }
+
+/* ============================================================
+   TELA: APP PRINCIPAL
+============================================================ */
+#screen-app {
+  flex-direction: column;
+  background: var(--bg);
+}
+
+/* Header */
+.app-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+.header-logo span { color: var(--accent); }
+
+.header-right { display: flex; align-items: center; gap: 12px; }
+.header-user {
+  font-size: 13px;
+  color: var(--text2);
+  font-weight: 500;
+}
+.avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--accent-light);
+  color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Nav tabs */
+.app-nav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+}
+.nav-tab {
+  padding: 14px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text2);
+  cursor: pointer;
+  border: none;
+  background: none;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: all 0.15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.nav-tab:hover { color: var(--text); }
+.nav-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Conteúdo */
+.app-content {
+  padding: 32px 24px;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.page { display: none; }
+.page.active { display: block; animation: fadeUp 0.3s ease; }
+
+/* ============================================================
+   COMPONENTES COMUNS
+============================================================ */
+.page-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.page-sub {
+  color: var(--text2);
+  font-size: 14px;
+  margin-bottom: 28px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+.card + .card { margin-top: 16px; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.badge-green { background: var(--green-light); color: var(--green); }
+.badge-amber { background: var(--amber-light); color: var(--amber); }
+.badge-red   { background: var(--red-light);   color: var(--red);   }
+.badge-blue  { background: var(--accent-light); color: var(--accent); }
+.badge-gray  { background: var(--surface2); color: var(--text2); }
+
+.divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+.alert {
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  margin-bottom: 16px;
+  display: none;
+}
+.alert.show { display: block; }
+.alert-error { background: var(--red-light); color: var(--red); border: 1px solid rgba(197,48,48,0.2); }
+.alert-success { background: var(--green-light); color: var(--green); border: 1px solid rgba(26,138,74,0.2); }
+.alert-info { background: var(--accent-light); color: var(--accent); border: 1px solid rgba(26,62,255,0.2); }
+
+/* Loading spinner */
+.spinner {
+  width: 20px; height: 20px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  display: inline-block;
+}
+.spinner-dark {
+  border-color: rgba(0,0,0,0.1);
+  border-top-color: var(--accent);
+}
+
+/* ============================================================
+   PÁGINA: NOVO AGENDAMENTO
+============================================================ */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+.step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.step-num {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+  background: var(--surface2);
+  color: var(--text2);
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.step.active .step-num { background: var(--accent); color: white; }
+.step.done .step-num { background: var(--green); color: white; }
+.step.active .step-label { color: var(--text); }
+.step-label { color: var(--text2); }
+.step-line {
+  height: 1px; flex: 1;
+  background: var(--border);
+}
+
+.step-page { display: none; }
+.step-page.active { display: block; animation: fadeUp 0.25s ease; }
+
+/* Grid de professores */
+.professor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.professor-card {
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.18s;
+  background: var(--surface);
+  position: relative;
+}
+.professor-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow); }
+.professor-card.selected { border-color: var(--accent); background: var(--accent-light); }
+.professor-card.selected::after {
+  content: '✓';
+  position: absolute;
+  top: 10px; right: 12px;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  color: white;
+  border-radius: 50%;
+  font-size: 11px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+}
+.prof-avatar {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  margin-bottom: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 700;
+  color: white;
+}
+.prof-name { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+.prof-nivel { font-size: 12px; color: var(--text2); margin-bottom: 8px; }
+.prof-preco { font-size: 14px; font-weight: 700; color: var(--accent); }
+
+/* Calendário simples */
+.calendar-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.calendar-month {
+  font-family: 'Syne', sans-serif;
+  font-size: 16px; font-weight: 700;
+}
+.calendar-nav {
+  width: 32px; height: 32px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  transition: all 0.15s;
+}
+.calendar-nav:hover { border-color: var(--accent); color: var(--accent); }
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 24px;
+}
+.cal-day-name {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 8px 0;
+}
+.cal-day {
+  aspect-ratio: 1;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-weight: 500;
+}
+.cal-day:hover:not(.disabled):not(.empty) { background: var(--accent-light); color: var(--accent); }
+.cal-day.selected { background: var(--accent); color: white; font-weight: 700; }
+.cal-day.today { border: 1.5px solid var(--accent); color: var(--accent); }
+.cal-day.disabled { color: var(--text3); cursor: not-allowed; }
+.cal-day.has-slots { position: relative; }
+.cal-day.has-slots::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.cal-day.empty { cursor: default; }
+
+/* Horários */
+.slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 8px;
+  margin-bottom: 24px;
+}
+.slot {
+  padding: 10px 8px;
+  text-align: center;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: var(--surface);
+}
+.slot:hover { border-color: var(--accent); color: var(--accent); }
+.slot.selected { background: var(--accent); color: white; border-color: var(--accent); }
+.slot.occupied { background: var(--surface2); color: var(--text3); cursor: not-allowed; border-color: var(--border); }
+
+/* Pacotes */
+.pacote-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+.pacote-item {
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: all 0.18s;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.pacote-item:hover { border-color: var(--accent); }
+.pacote-item.selected { border-color: var(--accent); background: var(--accent-light); }
+.pacote-info .pacote-nome { font-weight: 600; font-size: 15px; margin-bottom: 2px; }
+.pacote-info .pacote-desc { font-size: 13px; color: var(--text2); }
+.pacote-preco { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: var(--accent); }
+
+/* Resumo */
+.resumo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.resumo-item {}
+.resumo-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+.resumo-value { font-size: 15px; font-weight: 500; }
+
+.total-box {
+  background: var(--accent-light);
+  border: 1.5px solid rgba(26,62,255,0.2);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px;
+}
+.total-label { font-size: 14px; font-weight: 600; color: var(--accent); }
+.total-value { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; color: var(--accent); }
+
+/* Nav do wizard */
+.step-nav {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+/* ============================================================
+   PÁGINA: MEUS AGENDAMENTOS
+============================================================ */
+.agendamento-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+  transition: all 0.15s;
+}
+.agendamento-item:hover { box-shadow: var(--shadow-lg); }
+
+.ag-date-box {
+  text-align: center;
+  min-width: 52px;
+  background: var(--accent-light);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  flex-shrink: 0;
+}
+.ag-date-day { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; color: var(--accent); line-height: 1; }
+.ag-date-month { font-size: 10px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; }
+
+.ag-info { flex: 1; }
+.ag-prof { font-weight: 600; font-size: 15px; }
+.ag-hora { font-size: 13px; color: var(--text2); margin-top: 2px; }
+.ag-pacote { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+.ag-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+
+/* ============================================================
+   PÁGINA: FINANCEIRO
+============================================================ */
+.financeiro-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.fin-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+.fin-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.fin-value { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; }
+.fin-value.green { color: var(--green); }
+.fin-value.amber { color: var(--amber); }
+.fin-value.red   { color: var(--red); }
+
+.cobranca-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow);
+}
+.cob-info .cob-desc { font-weight: 600; font-size: 14px; }
+.cob-info .cob-data { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.cob-right { display: flex; align-items: center; gap: 14px; }
+.cob-valor { font-weight: 700; font-size: 16px; }
+.btn-pagar {
+  background: var(--accent);
+  color: white;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.15s;
+}
+.btn-pagar:hover { background: var(--accent-dark); }
+
+/* ============================================================
+   PÁGINA: MEU PERFIL
+============================================================ */
+.perfil-avatar-big {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: var(--accent-light);
+  color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; font-weight: 700;
+  margin-bottom: 16px;
+}
+
+/* ============================================================
+   EMPTY STATE
+============================================================ */
+.empty-state {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--text2);
+}
+.empty-icon { font-size: 40px; margin-bottom: 16px; opacity: 0.5; }
+.empty-title { font-weight: 600; font-size: 16px; margin-bottom: 6px; color: var(--text); }
+.empty-desc { font-size: 14px; }
+
+/* ============================================================
+   MODAL
+============================================================ */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: none; align-items: center; justify-content: center;
+  z-index: 1000;
+  padding: 24px;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 32px;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  animation: fadeUp 0.25s ease;
+}
+.modal-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.modal-desc { color: var(--text2); font-size: 14px; margin-bottom: 24px; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+/* ============================================================
+   LOADER PAGE
+============================================================ */
+#screen-loading {
+  align-items: center; justify-content: center;
+  background: var(--bg);
+  flex-direction: column;
+  gap: 16px;
+}
+.loading-logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 28px; font-weight: 800;
+}
+.loading-logo span { color: var(--accent); }
+
+/* ============================================================
+   ANIMAÇÕES
+============================================================ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   RESPONSIVO
+============================================================ */
+@media (max-width: 600px) {
+  .login-card { padding: 32px 24px; }
+  .app-content { padding: 20px 16px; }
+  .financeiro-summary { grid-template-columns: 1fr; }
+  .resumo-grid { grid-template-columns: 1fr; }
+  .agendamento-item { flex-wrap: wrap; }
+  .professor-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     TELA: LOADING
+============================================================ -->
+<div id="screen-loading" class="screen active">
+  <div class="loading-logo"><span>Padel</span>App</div>
+  <div class="spinner spinner-dark"></div>
+</div>
+
+<!-- ============================================================
+     TELA: LOGIN / CADASTRO
+============================================================ -->
+<div id="screen-login" class="screen">
+  <div class="login-card">
+    <div class="login-logo"><span>Padel</span>App</div>
+    <div class="login-title">Bem-vindo de volta</div>
+    <div class="login-sub">Acesse sua conta para agendar aulas</div>
+
+    <div class="login-tabs">
+      <button class="login-tab active" onclick="switchLoginTab('login')">Entrar</button>
+      <button class="login-tab" onclick="switchLoginTab('cadastro')">Criar conta</button>
+    </div>
+
+    <!-- Tab Login -->
+    <div id="tab-login">
+      <div class="alert alert-error" id="login-error"></div>
+      <div class="field">
+        <label>E-mail</label>
+        <input type="email" id="login-email" placeholder="seu@email.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label>Senha</label>
+        <input type="password" id="login-senha" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn btn-primary" id="btn-login" onclick="fazerLogin()">
+        Entrar
+      </button>
+      <div style="text-align:center; margin-top:16px;">
+        <button class="btn btn-ghost" onclick="mostrarRecuperarSenha()">Esqueci a senha</button>
+      </div>
+    </div>
+
+    <!-- Tab Cadastro -->
+    <div id="tab-cadastro" style="display:none">
+      <div class="alert alert-error" id="cadastro-error"></div>
+      <div class="field">
+        <label>Nome completo</label>
+        <input type="text" id="cad-nome" placeholder="Seu nome">
+      </div>
+      <div class="field">
+        <label>E-mail</label>
+        <input type="email" id="cad-email" placeholder="seu@email.com">
+      </div>
+      <div class="field">
+        <label>Telefone</label>
+        <input type="tel" id="cad-telefone" placeholder="(41) 99999-9999">
+      </div>
+      <div class="field">
+        <label>Senha</label>
+        <input type="password" id="cad-senha" placeholder="Mínimo 6 caracteres">
+      </div>
+      <button class="btn btn-primary" id="btn-cadastro" onclick="fazerCadastro()">
+        Criar conta
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     TELA: APP PRINCIPAL
+============================================================ -->
+<div id="screen-app" class="screen">
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-logo"><span>Padel</span>App</div>
+    <div class="header-right">
+      <span class="header-user" id="header-nome">Aluno</span>
+      <div class="avatar" id="header-avatar">A</div>
+      <button class="btn btn-ghost btn-sm" onclick="fazerLogout()">Sair</button>
+    </div>
+  </header>
+
+  <!-- Nav -->
+  <nav class="app-nav">
+    <button class="nav-tab active" onclick="navegarPara('agendar')">Agendar aula</button>
+    <button class="nav-tab" onclick="navegarPara('agendamentos')">Minhas aulas</button>
+    <button class="nav-tab" onclick="navegarPara('financeiro')">Financeiro</button>
+    <button class="nav-tab" onclick="navegarPara('perfil')">Meu perfil</button>
+  </nav>
+
+  <!-- Conteúdo -->
+  <main class="app-content">
+
+    <!-- ===================== PÁGINA: AGENDAR ===================== -->
+    <div id="page-agendar" class="page active">
+      <div class="page-title">Agendar aula</div>
+      <div class="page-sub">Escolha professor, horário e forma de pagamento</div>
+
+      <!-- Steps indicator -->
+      <div class="step-indicator">
+        <div class="step active" id="step-ind-1">
+          <div class="step-num">1</div>
+          <span class="step-label">Professor</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" id="step-ind-2">
+          <div class="step-num">2</div>
+          <span class="step-label">Data e hora</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" id="step-ind-3">
+          <div class="step-num">3</div>
+          <span class="step-label">Pacote</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" id="step-ind-4">
+          <div class="step-num">4</div>
+          <span class="step-label">Pagamento</span>
+        </div>
+      </div>
+
+      <!-- Step 1: Escolher professor -->
+      <div id="step-1" class="step-page active">
+        <div class="alert alert-error" id="step1-error"></div>
+        <div id="professores-loading" style="text-align:center;padding:40px;color:var(--text2);">
+          <div class="spinner spinner-dark" style="margin:0 auto 12px;"></div>
+          Carregando professores...
+        </div>
+        <div id="professor-grid" class="professor-grid" style="display:none"></div>
+        <div class="step-nav">
+          <button class="btn btn-primary" onclick="irStep(2)">Próximo →</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Data e hora -->
+      <div id="step-2" class="step-page">
+        <div class="card">
+          <div class="calendar-header">
+            <button class="calendar-nav" onclick="mudarMes(-1)">‹</button>
+            <div class="calendar-month" id="cal-titulo"></div>
+            <button class="calendar-nav" onclick="mudarMes(1)">›</button>
+          </div>
+          <div class="calendar-grid" id="cal-grid"></div>
+        </div>
+
+        <div id="slots-section" style="display:none; margin-top:20px;">
+          <div style="font-weight:600; margin-bottom:12px;" id="slots-titulo">Horários disponíveis</div>
+          <div id="slots-grid" class="slots-grid"></div>
+        </div>
+
+        <div class="step-nav">
+          <button class="btn btn-outline" onclick="irStep(1)">← Voltar</button>
+          <button class="btn btn-primary" onclick="irStep(3)">Próximo →</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Pacote -->
+      <div id="step-3" class="step-page">
+        <div class="alert alert-error" id="step3-error"></div>
+        <div id="pacote-list" class="pacote-list"></div>
+        <div class="step-nav">
+          <button class="btn btn-outline" onclick="irStep(2)">← Voltar</button>
+          <button class="btn btn-primary" onclick="irStep(4)">Próximo →</button>
+        </div>
+      </div>
+
+      <!-- Step 4: Resumo e pagamento -->
+      <div id="step-4" class="step-page">
+        <div class="card" style="margin-bottom:20px;">
+          <div style="font-weight:600; font-size:15px; margin-bottom:16px;">Resumo do agendamento</div>
+          <div class="resumo-grid">
+            <div class="resumo-item">
+              <div class="resumo-label">Professor</div>
+              <div class="resumo-value" id="res-professor">—</div>
+            </div>
+            <div class="resumo-item">
+              <div class="resumo-label">Data</div>
+              <div class="resumo-value" id="res-data">—</div>
+            </div>
+            <div class="resumo-item">
+              <div class="resumo-label">Horário</div>
+              <div class="resumo-value" id="res-hora">—</div>
+            </div>
+            <div class="resumo-item">
+              <div class="resumo-label">Pacote</div>
+              <div class="resumo-value" id="res-pacote">—</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="total-box">
+          <div class="total-label">Total a pagar</div>
+          <div class="total-value" id="res-total">R$ 0,00</div>
+        </div>
+
+        <div class="alert alert-error" id="step4-error"></div>
+        <div class="alert alert-info" id="step4-info"></div>
+
+        <div class="step-nav">
+          <button class="btn btn-outline" onclick="irStep(3)">← Voltar</button>
+          <button class="btn btn-primary" id="btn-pagar-mp" onclick="confirmarAgendamento()">
+            Pagar com MercadoPago
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /page-agendar -->
+
+    <!-- ===================== PÁGINA: AGENDAMENTOS ===================== -->
+    <div id="page-agendamentos" class="page">
+      <div class="page-title">Minhas aulas</div>
+      <div class="page-sub">Histórico e próximas aulas agendadas</div>
+
+      <div style="display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;">
+        <button class="btn btn-outline btn-sm" id="fil-todos" onclick="filtrarAg('todos')">Todos</button>
+        <button class="btn btn-outline btn-sm" id="fil-proximas" onclick="filtrarAg('proximas')">Próximas</button>
+        <button class="btn btn-outline btn-sm" id="fil-realizados" onclick="filtrarAg('realizados')">Realizados</button>
+        <button class="btn btn-outline btn-sm" id="fil-cancelados" onclick="filtrarAg('cancelados')">Cancelados</button>
+      </div>
+
+      <div id="agendamentos-loading" style="text-align:center;padding:40px;color:var(--text2);">
+        <div class="spinner spinner-dark" style="margin:0 auto 12px;"></div>
+        Carregando...
+      </div>
+      <div id="agendamentos-list"></div>
+    </div>
+
+    <!-- ===================== PÁGINA: FINANCEIRO ===================== -->
+    <div id="page-financeiro" class="page">
+      <div class="page-title">Financeiro</div>
+      <div class="page-sub">Suas cobranças e pagamentos</div>
+
+      <div class="financeiro-summary">
+        <div class="fin-card">
+          <div class="fin-label">Pago</div>
+          <div class="fin-value green" id="fin-pago">R$ 0</div>
+        </div>
+        <div class="fin-card">
+          <div class="fin-label">Pendente</div>
+          <div class="fin-value amber" id="fin-pendente">R$ 0</div>
+        </div>
+        <div class="fin-card">
+          <div class="fin-label">Vencido</div>
+          <div class="fin-value red" id="fin-vencido">R$ 0</div>
+        </div>
+      </div>
+
+      <div id="cobrancas-loading" style="text-align:center;padding:40px;color:var(--text2);">
+        <div class="spinner spinner-dark" style="margin:0 auto 12px;"></div>
+        Carregando...
+      </div>
+      <div id="cobrancas-list"></div>
+    </div>
+
+    <!-- ===================== PÁGINA: PERFIL ===================== -->
+    <div id="page-perfil" class="page">
+      <div class="page-title">Meu perfil</div>
+      <div class="page-sub">Dados da sua conta</div>
+
+      <div class="card">
+        <div class="perfil-avatar-big" id="perfil-avatar-big">A</div>
+        <div class="alert alert-success" id="perfil-success"></div>
+        <div class="alert alert-error" id="perfil-error"></div>
+        <div class="field">
+          <label>Nome completo</label>
+          <input type="text" id="perfil-nome" placeholder="Seu nome">
+        </div>
+        <div class="field">
+          <label>Telefone</label>
+          <input type="tel" id="perfil-telefone" placeholder="(41) 99999-9999">
+        </div>
+        <div class="field">
+          <label>E-mail</label>
+          <input type="email" id="perfil-email" disabled style="opacity:0.5;cursor:not-allowed;">
+        </div>
+        <hr class="divider">
+        <button class="btn btn-primary" style="max-width:200px;" onclick="salvarPerfil()">Salvar alterações</button>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <div style="font-weight:600; margin-bottom:16px;">Alterar senha</div>
+        <div class="field">
+          <label>Nova senha</label>
+          <input type="password" id="nova-senha" placeholder="Mínimo 6 caracteres">
+        </div>
+        <div class="field">
+          <label>Confirmar nova senha</label>
+          <input type="password" id="conf-senha" placeholder="Repita a senha">
+        </div>
+        <button class="btn btn-outline" style="max-width:200px;" onclick="alterarSenha()">Alterar senha</button>
+      </div>
+    </div>
+
+  </main>
+</div><!-- /screen-app -->
+
+<!-- ============================================================
+     MODAL: CANCELAR AGENDAMENTO
+============================================================ -->
+<div class="modal-overlay" id="modal-cancelar">
+  <div class="modal">
+    <div class="modal-title">Cancelar aula?</div>
+    <div class="modal-desc">Essa ação não pode ser desfeita. A cobrança pendente será mantida conforme a política da academia.</div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="fecharModal('modal-cancelar')">Voltar</button>
+      <button class="btn btn-danger" id="btn-confirmar-cancelar" onclick="confirmarCancelamento()">Cancelar aula</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     JAVASCRIPT
+============================================================ -->
+<script>
+// ============================================================
+// ⚙️ CONFIGURAÇÃO — altere apenas estas duas linhas
+// ============================================================
+const SUPABASE_URL = 'https://vdaxnncjcwpnffmzayqp.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZkYXhubmNqY3dwbmZmbXpheXFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3NzY3NDksImV4cCI6MjA5MTM1Mjc0OX0.HzmbVtc6BU2f-8u4swOzraQRwWROSmiShN_HbNbtrFs';
+
+// MercadoPago — coloque seu Public Key e configure o backend/edge function
+const MP_PUBLIC_KEY = 'SEU_MP_PUBLIC_KEY';
+// Endpoint que cria a preference no MercadoPago (Supabase Edge Function)
+const MP_PREFERENCE_ENDPOINT = `${SUPABASE_URL}/functions/v1/criar-preference-mp`;
+// ============================================================
+
+const { createClient } = supabase;
+window.sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Estado global
+let estado = {
+  usuario: null,
+  perfil: null,
+  // agendamento em construção
+  professorId: null,
+  professorNome: null,
+  dataHora: null,
+  dataSelecionada: null,
+  horaSelecionada: null,
+  pacoteId: null,
+  pacoteNome: null,
+  pacotePreco: 0,
+  // calendário
+  calMes: new Date().getMonth(),
+  calAno: new Date().getFullYear(),
+  horariosProf: [],
+  agendamentosProf: [],
+  // cancelamento
+  agendamentoCancelarId: null,
+};
+
+// ============================================================
+// INICIALIZAÇÃO
+// ============================================================
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user) {
+    estado.usuario = session.user;
+    await carregarPerfil();
+    mostrarApp();
+  } else {
+    mostrarTela('screen-login');
+  }
+}
+
+sb.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'SIGNED_IN' && session) {
+    estado.usuario = session.user;
+    await carregarPerfil();
+    mostrarApp();
+  } else if (event === 'SIGNED_OUT') {
+    estado.usuario = null;
+    estado.perfil = null;
+    mostrarTela('screen-login');
+  }
+});
+
+// ============================================================
+// TELAS
+// ============================================================
+function mostrarTela(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function mostrarApp() {
+  mostrarTela('screen-app');
+  const nome = estado.perfil?.nome || estado.usuario?.email?.split('@')[0] || 'Aluno';
+  document.getElementById('header-nome').textContent = nome;
+  document.getElementById('header-avatar').textContent = nome[0].toUpperCase();
+  carregarProfessores();
+  carregarPacotes();
+}
+
+// ============================================================
+// AUTH
+// ============================================================
+function switchLoginTab(tab) {
+  document.querySelectorAll('.login-tab').forEach((t,i) => {
+    t.classList.toggle('active', (i===0 && tab==='login') || (i===1 && tab==='cadastro'));
+  });
+  document.getElementById('tab-login').style.display = tab==='login' ? 'block' : 'none';
+  document.getElementById('tab-cadastro').style.display = tab==='cadastro' ? 'block' : 'none';
+}
+
+async function fazerLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const senha = document.getElementById('login-senha').value;
+  const btn = document.getElementById('btn-login');
+  const err = document.getElementById('login-error');
+
+  if (!email || !senha) { mostrarAlerta(err, 'Preencha e-mail e senha.'); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div>';
+
+  const { error } = await sb.auth.signInWithPassword({ email, password: senha });
+
+  btn.disabled = false;
+  btn.textContent = 'Entrar';
+
+  if (error) {
+    mostrarAlerta(err, 'E-mail ou senha incorretos.');
+  }
+}
+
+async function fazerCadastro() {
+  const nome = document.getElementById('cad-nome').value.trim();
+  const email = document.getElementById('cad-email').value.trim();
+  const telefone = document.getElementById('cad-telefone').value.trim();
+  const senha = document.getElementById('cad-senha').value;
+  const btn = document.getElementById('btn-cadastro');
+  const err = document.getElementById('cadastro-error');
+
+  if (!nome || !email || !senha) { mostrarAlerta(err, 'Preencha todos os campos obrigatórios.'); return; }
+  if (senha.length < 6) { mostrarAlerta(err, 'Senha deve ter no mínimo 6 caracteres.'); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div>';
+
+  const { error } = await sb.auth.signUp({
+    email, password: senha,
+    options: { data: { nome, telefone, role: 'aluno' } }
+  });
+
+  btn.disabled = false;
+  btn.textContent = 'Criar conta';
+
+  if (error) {
+    mostrarAlerta(err, error.message === 'User already registered' ? 'Este e-mail já está cadastrado.' : error.message);
+  } else {
+    mostrarAlerta(document.getElementById('cadastro-error'), 'Conta criada! Verifique seu e-mail.', 'success');
+  }
+}
+
+async function fazerLogout() {
+  await sb.auth.signOut();
+}
+
+function mostrarRecuperarSenha() {
+  const email = document.getElementById('login-email').value.trim();
+  if (!email) { mostrarAlerta(document.getElementById('login-error'), 'Digite seu e-mail acima primeiro.'); return; }
+  sb.auth.resetPasswordForEmail(email).then(({ error }) => {
+    if (!error) mostrarAlerta(document.getElementById('login-error'), 'E-mail de recuperação enviado!', 'success');
+  });
+}
+
+// ============================================================
+// PERFIL
+// ============================================================
+async function carregarPerfil() {
+  const { data } = await sb.from('perfis').select('*').eq('id', estado.usuario.id).single();
+  if (data) estado.perfil = data;
+}
+
+function preencherPerfil() {
+  if (!estado.perfil) return;
+  document.getElementById('perfil-nome').value = estado.perfil.nome || '';
+  document.getElementById('perfil-telefone').value = estado.perfil.telefone || '';
+  document.getElementById('perfil-email').value = estado.usuario?.email || '';
+  const inicial = (estado.perfil.nome || 'A')[0].toUpperCase();
+  document.getElementById('perfil-avatar-big').textContent = inicial;
+}
+
+async function salvarPerfil() {
+  const nome = document.getElementById('perfil-nome').value.trim();
+  const telefone = document.getElementById('perfil-telefone').value.trim();
+  const suc = document.getElementById('perfil-success');
+  const err = document.getElementById('perfil-error');
+
+  const { error } = await sb.from('perfis').update({ nome, telefone }).eq('id', estado.usuario.id);
+  if (error) { mostrarAlerta(err, 'Erro ao salvar perfil.'); return; }
+
+  estado.perfil = { ...estado.perfil, nome, telefone };
+  document.getElementById('header-nome').textContent = nome;
+  document.getElementById('header-avatar').textContent = nome[0].toUpperCase();
+  mostrarAlerta(suc, 'Perfil salvo com sucesso!', 'success');
+}
+
+async function alterarSenha() {
+  const nova = document.getElementById('nova-senha').value;
+  const conf = document.getElementById('conf-senha').value;
+  const err = document.getElementById('perfil-error');
+  const suc = document.getElementById('perfil-success');
+
+  if (nova.length < 6) { mostrarAlerta(err, 'Senha deve ter no mínimo 6 caracteres.'); return; }
+  if (nova !== conf) { mostrarAlerta(err, 'Senhas não coincidem.'); return; }
+
+  const { error } = await sb.auth.updateUser({ password: nova });
+  if (error) { mostrarAlerta(err, 'Erro ao alterar senha.'); return; }
+  mostrarAlerta(suc, 'Senha alterada com sucesso!', 'success');
+  document.getElementById('nova-senha').value = '';
+  document.getElementById('conf-senha').value = '';
+}
+
+// ============================================================
+// NAVEGAÇÃO
+// ============================================================
+function navegarPara(pagina) {
+  document.querySelectorAll('.nav-tab').forEach((t, i) => {
+    const paginas = ['agendar','agendamentos','financeiro','perfil'];
+    t.classList.toggle('active', paginas[i] === pagina);
+  });
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + pagina).classList.add('active');
+
+  if (pagina === 'agendamentos') carregarAgendamentos('todos');
+  if (pagina === 'financeiro') carregarCobrancas();
+  if (pagina === 'perfil') preencherPerfil();
+}
+
+// ============================================================
+// WIZARD: STEPS
+// ============================================================
+function irStep(num) {
+  // Validações
+  if (num === 2 && !estado.professorId) {
+    mostrarAlerta(document.getElementById('step1-error'), 'Selecione um professor.');
+    return;
+  }
+  if (num === 3 && !estado.dataHora) {
+    return; // botão desabilitado
+  }
+  if (num === 4 && !estado.pacoteId) {
+    mostrarAlerta(document.getElementById('step3-error'), 'Selecione um pacote ou aula avulsa.');
+    return;
+  }
+
+  // Atualizar indicador de steps
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('step-ind-' + i);
+    el.classList.remove('active', 'done');
+    if (i < num) el.classList.add('done');
+    if (i === num) el.classList.add('active');
+  }
+
+  document.querySelectorAll('.step-page').forEach(s => s.classList.remove('active'));
+  document.getElementById('step-' + num).classList.add('active');
+
+  if (num === 2) renderizarCalendario();
+  if (num === 3) renderizarPacotes();
+  if (num === 4) renderizarResumo();
+}
+
+// ============================================================
+// PROFESSORES
+// ============================================================
+const CORES_PROF = ['#1A3EFF','#0F6E56','#993C1D','#3C3489','#0C447C'];
+
+async function carregarProfessores() {
+  document.getElementById('professores-loading').style.display = 'block';
+  document.getElementById('professor-grid').style.display = 'none';
+
+  const { data, error } = await sb
+    .from('professores')
+    .select('id, preco_hora, nivel, cor_agenda, perfis(nome)');
+
+  document.getElementById('professores-loading').style.display = 'none';
+
+  console.log("PROF data:", JSON.stringify(data));
+  console.log("PROF error:", JSON.stringify(error));
+
+  if (error || !data?.length) {
+    document.getElementById('professor-grid').style.display = 'grid';
+    document.getElementById('professor-grid').innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1">
+        <div class="empty-icon">🎾</div>
+        <div class="empty-title">Nenhum professor disponível</div>
+        <div class="empty-desc">${error ? error.message : 'data vazia'}</div>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('professor-grid').style.display = 'grid';
+  document.getElementById('professor-grid').innerHTML = data.map((p, idx) => {
+    const nome = p.perfis?.nome || 'Professor';
+    const cor = p.cor_agenda || CORES_PROF[idx % CORES_PROF.length];
+    const inicial = nome[0].toUpperCase();
+    const preco = formatarMoeda(p.preco_hora);
+    return `
+      <div class="professor-card" id="prof-card-${p.id}" onclick="selecionarProfessor('${p.id}', '${nome.replace(/'/g,"\\'")}', '${cor}')">
+        <div class="prof-avatar" style="background:${cor}">${inicial}</div>
+        <div class="prof-name">${nome}</div>
+        <div class="prof-nivel">${p.nivel || 'Todos os níveis'}</div>
+        <div class="prof-preco">${preco}/hora</div>
+      </div>`;
+  }).join('');
+}
+
+function selecionarProfessor(id, nome, cor) {
+  document.querySelectorAll('.professor-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('prof-card-' + id)?.classList.add('selected');
+  estado.professorId = id;
+  estado.professorNome = nome;
+  estado.dataHora = null;
+  estado.dataSelecionada = null;
+  estado.horaSelecionada = null;
+  document.getElementById('step1-error').classList.remove('show');
+}
+
+// ============================================================
+// CALENDÁRIO
+// ============================================================
+const DIAS = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+async function renderizarCalendario() {
+  const hoje = new Date();
+  document.getElementById('cal-titulo').textContent = `${MESES[estado.calMes]} ${estado.calAno}`;
+
+  // Buscar horários do professor
+  const { data: horarios } = await sb.from('horarios')
+    .select('dia_semana, hora_inicio, hora_fim')
+    .eq('professor_id', estado.professorId)
+    .eq('ativo', true);
+
+  estado.horariosProf = horarios || [];
+
+  // Buscar agendamentos existentes do mês
+  const inicio = new Date(estado.calAno, estado.calMes, 1).toISOString();
+  const fim = new Date(estado.calAno, estado.calMes + 1, 0, 23, 59).toISOString();
+  const { data: agendamentos } = await sb.from('agendamentos')
+    .select('data_hora, status')
+    .eq('professor_id', estado.professorId)
+    .gte('data_hora', inicio)
+    .lte('data_hora', fim)
+    .neq('status', 'cancelado');
+
+  estado.agendamentosProf = agendamentos || [];
+
+  const diasComSlots = new Set(estado.horariosProf.map(h => h.dia_semana));
+
+  // Renderizar grid
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = DIAS.map(d => `<div class="cal-day-name">${d}</div>`).join('');
+
+  const primeiroDia = new Date(estado.calAno, estado.calMes, 1).getDay();
+  for (let i = 0; i < primeiroDia; i++) grid.innerHTML += `<div class="cal-day empty"></div>`;
+
+  const totalDias = new Date(estado.calAno, estado.calMes + 1, 0).getDate();
+
+  for (let d = 1; d <= totalDias; d++) {
+    const data = new Date(estado.calAno, estado.calMes, d);
+    const diaSemana = data.getDay();
+    const isPassado = data < new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+    const isHoje = data.toDateString() === hoje.toDateString();
+    const temSlot = diasComSlots.has(diaSemana);
+    const dataStr = data.toISOString().split('T')[0];
+    const isSelecionado = estado.dataSelecionada === dataStr;
+
+    let classes = 'cal-day';
+    if (isPassado || !temSlot) classes += ' disabled';
+    if (isHoje) classes += ' today';
+    if (temSlot && !isPassado) classes += ' has-slots';
+    if (isSelecionado) classes += ' selected';
+
+    const onclick = (!isPassado && temSlot)
+      ? `onclick="selecionarData('${dataStr}', ${diaSemana})"`
+      : '';
+
+    grid.innerHTML += `<div class="${classes}" ${onclick}>${d}</div>`;
+  }
+
+  document.getElementById('slots-section').style.display = 'none';
+}
+
+function mudarMes(delta) {
+  estado.calMes += delta;
+  if (estado.calMes > 11) { estado.calMes = 0; estado.calAno++; }
+  if (estado.calMes < 0)  { estado.calMes = 11; estado.calAno--; }
+  estado.dataSelecionada = null;
+  estado.horaSelecionada = null;
+  estado.dataHora = null;
+  renderizarCalendario();
+}
+
+async function selecionarData(dataStr, diaSemana) {
+  estado.dataSelecionada = dataStr;
+  estado.horaSelecionada = null;
+  estado.dataHora = null;
+
+  // Re-renderizar calendário
+  document.querySelectorAll('.cal-day.selected').forEach(el => el.classList.remove('selected'));
+  const hoje = new Date();
+  const totalDias = new Date(estado.calAno, estado.calMes + 1, 0).getDate();
+  // Recarregar apenas visual
+  renderizarCalendario();
+
+  // Montar slots
+  const horariosHoje = estado.horariosProf.filter(h => h.dia_semana === diaSemana);
+  const ocupados = new Set(
+    estado.agendamentosProf
+      .filter(ag => ag.data_hora.startsWith(dataStr))
+      .map(ag => ag.data_hora.substring(11, 16))
+  );
+
+  const slots = [];
+  for (const h of horariosHoje) {
+    let [hh, mm] = h.hora_inicio.split(':').map(Number);
+    const [hfim, mfim] = h.hora_fim.split(':').map(Number);
+    while (hh * 60 + mm + 60 <= hfim * 60 + mfim) {
+      const str = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+      slots.push({ hora: str, ocupado: ocupados.has(str) });
+      mm += 60;
+      if (mm >= 60) { hh += Math.floor(mm/60); mm = mm % 60; }
+    }
+  }
+
+  const data = new Date(dataStr + 'T00:00:00');
+  const [ano, mes, dia] = dataStr.split('-');
+  document.getElementById('slots-titulo').textContent =
+    `Horários — ${dia}/${mes}/${ano}`;
+
+  document.getElementById('slots-grid').innerHTML = slots.length
+    ? slots.map(s => `
+        <div class="slot${s.ocupado ? ' occupied' : ''}" ${!s.ocupado ? `onclick="selecionarHora('${s.hora}')"` : ''}>
+          ${s.hora}
+        </div>`).join('')
+    : '<div style="color:var(--text2);font-size:14px;">Sem horários disponíveis neste dia.</div>';
+
+  document.getElementById('slots-section').style.display = 'block';
+}
+
+function selecionarHora(hora) {
+  document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
+  event.target.classList.add('selected');
+  estado.horaSelecionada = hora;
+  estado.dataHora = `${estado.dataSelecionada}T${hora}:00`;
+}
+
+// ============================================================
+// PACOTES
+// ============================================================
+let todosPacotes = [];
+
+async function carregarPacotes() {
+  const { data } = await sb.from('pacotes').select('*').eq('ativo', true).order('preco');
+  todosPacotes = data || [];
+}
+
+function renderizarPacotes() {
+  document.getElementById('step3-error').classList.remove('show');
+  if (!todosPacotes.length) {
+    document.getElementById('pacote-list').innerHTML = `<div class="empty-state"><div class="empty-title">Nenhum pacote disponível</div></div>`;
+    return;
+  }
+  document.getElementById('pacote-list').innerHTML = todosPacotes.map(p => `
+    <div class="pacote-item${estado.pacoteId === p.id ? ' selected' : ''}" id="pac-${p.id}" onclick="selecionarPacote('${p.id}', '${p.nome.replace(/'/g,"\\'")}', ${p.preco})">
+      <div class="pacote-info">
+        <div class="pacote-nome">${p.nome}</div>
+        <div class="pacote-desc">${p.descricao || (p.tipo === 'fixo' ? `${p.qtd_aulas} aulas/mês` : 'Aula avulsa')}</div>
+      </div>
+      <div class="pacote-preco">${formatarMoeda(p.preco)}</div>
+    </div>`).join('');
+}
+
+function selecionarPacote(id, nome, preco) {
+  document.querySelectorAll('.pacote-item').forEach(p => p.classList.remove('selected'));
+  document.getElementById('pac-' + id)?.classList.add('selected');
+  estado.pacoteId = id;
+  estado.pacoteNome = nome;
+  estado.pacotePreco = preco;
+}
+
+// ============================================================
+// RESUMO
+// ============================================================
+function renderizarResumo() {
+  const [ano, mes, dia] = estado.dataSelecionada.split('-');
+  document.getElementById('res-professor').textContent = estado.professorNome;
+  document.getElementById('res-data').textContent = `${dia}/${mes}/${ano}`;
+  document.getElementById('res-hora').textContent = estado.horaSelecionada;
+  document.getElementById('res-pacote').textContent = estado.pacoteNome;
+  document.getElementById('res-total').textContent = formatarMoeda(estado.pacotePreco);
+  document.getElementById('step4-error').classList.remove('show');
+  document.getElementById('step4-info').classList.remove('show');
+}
+
+// ============================================================
+// CONFIRMAR AGENDAMENTO + MERCADOPAGO
+// ============================================================
+async function confirmarAgendamento() {
+  const btn = document.getElementById('btn-pagar-mp');
+  const err = document.getElementById('step4-error');
+  const info = document.getElementById('step4-info');
+
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Aguarde...';
+
+  try {
+    // 1. Criar agendamento com status pendente_pagamento
+    const { data: ag, error: agErr } = await sb.from('agendamentos').insert({
+      aluno_id: estado.usuario.id,
+      professor_id: estado.professorId,
+      pacote_id: estado.pacoteId,
+      data_hora: estado.dataHora,
+      duracao_min: 60,
+      status: 'pendente_pagamento',
+    }).select().single();
+
+    if (agErr) throw new Error('Erro ao criar agendamento: ' + agErr.message);
+
+    // 2. Criar cobrança
+    const { data: cob, error: cobErr } = await sb.from('cobrancas').insert({
+      agendamento_id: ag.id,
+      aluno_id: estado.usuario.id,
+      pacote_id: estado.pacoteId,
+      tipo: todosPacotes.find(p => p.id === estado.pacoteId)?.tipo || 'avulso',
+      valor: estado.pacotePreco,
+      status: 'pendente',
+    }).select().single();
+
+    if (cobErr) throw new Error('Erro ao criar cobrança: ' + cobErr.message);
+
+    // 3. Chamar edge function para criar preference no MercadoPago
+    const { data: { session } } = await sb.auth.getSession();
+    const resp = await fetch(MP_PREFERENCE_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + session.access_token,
+      },
+      body: JSON.stringify({
+        cobranca_id: cob.id,
+        agendamento_id: ag.id,
+        valor: estado.pacotePreco,
+        descricao: `Aula de padel — ${estado.professorNome} — ${estado.dataSelecionada} ${estado.horaSelecionada}`,
+        email_aluno: estado.usuario.email,
+      }),
+    });
+
+    if (!resp.ok) throw new Error('Erro ao criar pagamento. Tente novamente.');
+
+    const { init_point, preference_id } = await resp.json();
+
+    // 4. Salvar preference_id na cobrança
+    await sb.from('cobrancas').update({ mp_preference_id: preference_id }).eq('id', cob.id);
+
+    // 5. Redirecionar para checkout do MercadoPago
+    mostrarAlerta(info, 'Redirecionando para o pagamento...', 'info');
+    setTimeout(() => { window.location.href = init_point; }, 1200);
+
+  } catch (e) {
+    mostrarAlerta(err, e.message);
+    btn.disabled = false;
+    btn.textContent = 'Pagar com MercadoPago';
+  }
+}
+
+// ============================================================
+// MEUS AGENDAMENTOS
+// ============================================================
+async function carregarAgendamentos(filtro) {
+  document.getElementById('agendamentos-loading').style.display = 'block';
+  document.getElementById('agendamentos-list').innerHTML = '';
+
+  // Highlight filtro ativo
+  ['todos','proximas','realizados','cancelados'].forEach(f => {
+    document.getElementById('fil-' + f)?.classList.toggle('btn-primary', f === filtro);
+    document.getElementById('fil-' + f)?.classList.toggle('btn-outline', f !== filtro);
+  });
+
+  let query = sb.from('agendamentos')
+    .select('id, data_hora, status, duracao_min, pacotes(nome), professores(perfis(nome))')
+    .eq('aluno_id', estado.usuario.id)
+    .order('data_hora', { ascending: false });
+
+  if (filtro === 'proximas') query = query.in('status', ['confirmado','aguardando_confirmacao','pendente_pagamento']).gte('data_hora', new Date().toISOString());
+  if (filtro === 'realizados') query = query.eq('status', 'realizado');
+  if (filtro === 'cancelados') query = query.in('status', ['cancelado','nao_compareceu']);
+
+  const { data, error } = await query;
+  document.getElementById('agendamentos-loading').style.display = 'none';
+
+  if (error || !data?.length) {
+    document.getElementById('agendamentos-list').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📅</div>
+        <div class="empty-title">Nenhuma aula encontrada</div>
+        <div class="empty-desc">Suas aulas agendadas aparecerão aqui.</div>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('agendamentos-list').innerHTML = data.map(ag => {
+    const dt = new Date(ag.data_hora);
+    const dia = String(dt.getDate()).padStart(2,'0');
+    const mes = MESES[dt.getMonth()].substring(0,3).toUpperCase();
+    const hora = `${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+    const prof = ag.professores?.perfis?.nome || '—';
+    const pacote = ag.pacotes?.nome || 'Aula avulsa';
+    const badge = badgeStatus(ag.status);
+    const podeCancel = ['confirmado','aguardando_confirmacao'].includes(ag.status) && dt > new Date();
+
+    return `
+      <div class="agendamento-item">
+        <div class="ag-date-box">
+          <div class="ag-date-day">${dia}</div>
+          <div class="ag-date-month">${mes}</div>
+        </div>
+        <div class="ag-info">
+          <div class="ag-prof">${prof}</div>
+          <div class="ag-hora">${hora} · ${ag.duracao_min} min</div>
+          <div class="ag-pacote">${pacote}</div>
+        </div>
+        <div class="ag-right">
+          <span class="badge ${badge.cls}">${badge.label}</span>
+          ${podeCancel ? `<button class="btn btn-danger btn-sm" onclick="abrirCancelar('${ag.id}')">Cancelar</button>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function filtrarAg(filtro) { carregarAgendamentos(filtro); }
+
+function badgeStatus(s) {
+  const map = {
+    pendente_pagamento:    { cls: 'badge-amber', label: 'Pend. pagamento' },
+    aguardando_confirmacao:{ cls: 'badge-blue',  label: 'Aguard. confirmação' },
+    confirmado:            { cls: 'badge-green', label: 'Confirmado' },
+    realizado:             { cls: 'badge-gray',  label: 'Realizado' },
+    cancelado:             { cls: 'badge-red',   label: 'Cancelado' },
+    nao_compareceu:        { cls: 'badge-red',   label: 'Não compareceu' },
+  };
+  return map[s] || { cls: 'badge-gray', label: s };
+}
+
+function abrirCancelar(id) {
+  estado.agendamentoCancelarId = id;
+  document.getElementById('modal-cancelar').classList.add('open');
+}
+
+async function confirmarCancelamento() {
+  const btn = document.getElementById('btn-confirmar-cancelar');
+  btn.disabled = true;
+  btn.textContent = 'Cancelando...';
+
+  await sb.from('agendamentos')
+    .update({ status: 'cancelado' })
+    .eq('id', estado.agendamentoCancelarId);
+
+  fecharModal('modal-cancelar');
+  btn.disabled = false;
+  btn.textContent = 'Cancelar aula';
+  carregarAgendamentos('todos');
+}
+
+// ============================================================
+// COBRANÇAS
+// ============================================================
+async function carregarCobrancas() {
+  document.getElementById('cobrancas-loading').style.display = 'block';
+  document.getElementById('cobrancas-list').innerHTML = '';
+
+  const { data } = await sb.from('cobrancas')
+    .select('id, tipo, valor, status, vencimento, pago_em, mp_metodo, mp_preference_id, agendamentos(data_hora), pacotes(nome)')
+    .eq('aluno_id', estado.usuario.id)
+    .order('criado_em', { ascending: false });
+
+  document.getElementById('cobrancas-loading').style.display = 'none';
+
+  // Totais
+  let pago = 0, pendente = 0, vencido = 0;
+  (data || []).forEach(c => {
+    if (c.status === 'pago') pago += c.valor;
+    if (c.status === 'pendente') pendente += c.valor;
+    if (c.status === 'vencido') vencido += c.valor;
+  });
+  document.getElementById('fin-pago').textContent = formatarMoeda(pago);
+  document.getElementById('fin-pendente').textContent = formatarMoeda(pendente);
+  document.getElementById('fin-vencido').textContent = formatarMoeda(vencido);
+
+  if (!data?.length) {
+    document.getElementById('cobrancas-list').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">💳</div>
+        <div class="empty-title">Nenhuma cobrança ainda</div>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('cobrancas-list').innerHTML = data.map(c => {
+    const badge = badgeStatus(c.status);
+    const desc = c.pacotes?.nome || (c.tipo === 'mensalidade' ? 'Mensalidade' : 'Aula avulsa');
+    const dataRef = c.agendamentos?.data_hora
+      ? new Date(c.agendamentos.data_hora).toLocaleDateString('pt-BR')
+      : (c.vencimento ? new Date(c.vencimento+'T00:00').toLocaleDateString('pt-BR') : '—');
+
+    const btnPagar = c.status === 'pendente' && c.mp_preference_id
+      ? `<button class="btn-pagar" onclick="retomarPagamento('${c.mp_preference_id}')">Pagar agora</button>`
+      : '';
+
+    return `
+      <div class="cobranca-item">
+        <div class="cob-info">
+          <div class="cob-desc">${desc}</div>
+          <div class="cob-data">${dataRef} ${c.mp_metodo ? '· ' + c.mp_metodo : ''}</div>
+        </div>
+        <div class="cob-right">
+          <div class="cob-valor">${formatarMoeda(c.valor)}</div>
+          <span class="badge ${badge.cls}">${badge.label}</span>
+          ${btnPagar}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function retomarPagamento(preferenceId) {
+  // Para buscar o init_point, o ideal é re-chamar a edge function com o preference_id existente
+  // Por simplificação, redireciona para o link padrão do MP
+  window.location.href = `https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=${preferenceId}`;
+}
+
+// ============================================================
+// MODAIS
+// ============================================================
+function fecharModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function formatarMoeda(valor) {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor || 0);
+}
+
+function mostrarAlerta(el, msg, tipo = 'error') {
+  el.textContent = msg;
+  el.className = `alert alert-${tipo} show`;
+  setTimeout(() => el.classList.remove('show'), 5000);
+}
+
+// Fechar modal clicando fora
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+
+// ============================================================
+// START
+// ============================================================
+init();
+</script>
+</body>
+</html>
