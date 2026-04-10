@@ -1457,12 +1457,11 @@ async function selecionarData(dataStr, diaSemana) {
   estado.horaSelecionada = null;
   estado.dataHora = null;
 
-  // Re-renderizar calendário
-  document.querySelectorAll('.cal-day.selected').forEach(el => el.classList.remove('selected'));
-  const hoje = new Date();
-  const totalDias = new Date(estado.calAno, estado.calMes + 1, 0).getDate();
-  // Recarregar apenas visual
-  renderizarCalendario();
+  // Atualizar visual do calendário sem recarregar tudo
+  document.querySelectorAll('.cal-day').forEach(el => {
+    el.classList.remove('selected');
+  });
+  event.currentTarget.classList.add('selected');
 
   // Montar slots
   const horariosHoje = estado.horariosProf.filter(h => h.dia_semana === diaSemana);
